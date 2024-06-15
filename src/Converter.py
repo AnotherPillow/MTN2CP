@@ -199,6 +199,45 @@ class Converter:
                 }
                 tilePatch['MapTiles'].append(mt)
             self.content['Changes'].append(tilePatch)
+        
+        for map in q(self.farmType.get('neighboringMaps'), []):
+            name = map['MapName']
+            if name not in ['Forest', 'BusStop', 'Backwoods']:
+                logger.info(f'{name} does not need migrating, skipping...')
+                continue
+            if len(q(map.get('warpPoints'), [])) == 0:
+                logger.warn(f'No warp points found for {name}, skipping...')
+                continue
+
+            toX = None
+            toY = None
+            for warp in map['warpPoints']:
+                if toX == None:
+                    toX = warp['toX']
+                elif toX != warp['toX']:
+                    logger.warn(f'Warppoints for {name} has multiple X axis destinations on farm. Using first.')
+                
+                if toY == None:
+                    toY = warp['toY']
+                elif toY != warp['toY']:
+                    logger.warn(f'Warppoints for {name} has multiple Y axis destinations on farm. Using first.')
+                
+            property = None
+            if name == 'Forest':
+                property = 'ForestEntry'
+            elif name == 'BusStop':
+                property = 'BusStopEntry'
+            elif name == 'Backwoods':
+                property = 'BackwoodsEntry'
+            
+            self.content['Changes'].append({
+                "LogName": f"set up {name} entrance for farm",
+                "Action": "EditMap",
+                "Target": fp,
+                "MapProperties": {
+                    property: f"{toX} {toY}"
+                }
+            })
 
 
         self.translateManifest()
