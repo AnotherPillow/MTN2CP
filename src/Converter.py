@@ -1,4 +1,6 @@
 import json5, shutil, os, json, urllib.request
+
+from .layout import HOUSE_LAYOUTS_PROPS
 from .xnb import *
 
 from .Logger import logger
@@ -237,6 +239,17 @@ class Converter:
                 "MapProperties": {
                     property: f"{toX} {toY}"
                 }
+            })
+
+        if 'furnitureLayoutFromCanon' in self.farmType:
+            id = self.farmType['furnitureLayoutFromCanon']
+            props = HOUSE_LAYOUTS_PROPS[id]
+            logger.warn('Farmhouse furniture layout **will not work**.')
+            self.content['Changes'].append({
+                "LogName": f"set up farmhouse design/layout entrance for farm",
+                "Action": "EditMap",
+                "Target": fp,
+                "MapProperties": props
             })
 
 
